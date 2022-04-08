@@ -2,38 +2,41 @@
 
 namespace vmc {
 
+// A ptr wrapper, make GC easier & prettier for LinearBox
 template<class T> class PtrBox {
 public:
     PtrBox(T* ptr) {
         data = ptr;
+        count = 1;
     }
-    void Add() {
-        count++;
-    }
+    T* Get() { return data; }
+    void Add() { count++; }
     void Sub() {
         if(count){
             count--;
-            if(count == 0) delete data;
+            if(count == 0) { delete data; data = nullptr; }
         }
     }
-    bool Destroyed() {
-        return !count;
-    }
+    bool Destroyed() { return !count; }
 private:
     T* data;
     unsigned int count;
 };
 
+// A basic 1D linear data container
 template<class T> class LinearBox {
 public:
-    LinearBox(int);
+    LinearBox(unsigned int size);
+    LinearBox(unsigned int size, T* ptr);
     LinearBox(const LinearBox&);
     ~LinearBox();
-    T& at(unsigned int);
-    unsigned int len();
+    T at(unsigned int index);
+    void set(unsigned int index, const T& value);
+    unsigned int len() { return length; }
 private:
     PtrBox<T>* data;
     unsigned int length;
+    bool copied;
 };
 
 template<class T> class Vec {
@@ -45,3 +48,5 @@ private:
 };
 
 } // namespace end
+
+#include "vmc.cpp"
