@@ -39,6 +39,7 @@ private:
     bool copied;
 };
 
+// 1D data container
 template<class T> class Vec {
 public:
     Vec() {}
@@ -46,6 +47,8 @@ public:
 private:
     LinearBox<T> data;
 };
+
+// TODO: 2D Mat, 3D Cube
 
 } // namespace end
 
