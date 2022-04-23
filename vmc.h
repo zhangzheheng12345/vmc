@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream> // Just for std
+
 namespace vmc {
 
 // A ptr wrapper, make GC easier & prettier for LinearBox
@@ -29,14 +31,17 @@ public:
     LinearBox(unsigned int size);
     LinearBox(unsigned int size, T* ptr);
     LinearBox(const LinearBox&);
+    LinearBox(std::initializer_list<T>);
     ~LinearBox();
     T at(unsigned int index);
     void set(unsigned int index, const T& value);
+    LinearBox<T> clone();
     unsigned int len() { return length; }
 private:
-    PtrBox<T>* data;
+    T* deepCopy();
+    PtrBox<T>* data = nullptr;
     unsigned int length;
-    bool copied;
+    bool copied = true;
 };
 
 // 1D data container

@@ -1,12 +1,13 @@
 /********************
-Lightest v1.2.0
+Lightest v1.2.1
 This is the core file of this library, which provides a lightest unit test framework.
 MIT licensed.
 Github Repo: https://github.com/zhangzheheng12345/Lightest
 Author's Github: https://github.com/zhangzheheng12345
 ********************/
 
-#pragma once
+#ifndef _LIGHTEST_H_
+#define _LIGHTEST_H_
 
 #include <iostream>
 #include <ctime>
@@ -23,23 +24,31 @@ using namespace std;
     void name(lightest::Testing& testing); \
     lightest::Signer signer_ ## name(__FILE__, #name, name); \
     void name(lightest::Testing& testing)
+#define FILTER(level) lightest::Testing::Filter(level)
+
+enum FiltLevel {
+    ALL = 0, MSG_LOWER, WARN_LOWER, ERR_LOWER // LOG => MSG level, Fail will always be outputted
+};
 
 class Testing {
     public:
         Testing(const char* file, const char* name) {
-            cout << "[Begin ] -------------------- " << name << endl;
+            cout << "[Begin ] =====> " << name << " ----" << endl;
             test.name = name, test.file = file;
             test.failureCount = 0, test.failed = false;
             start = clock();
         }
         void Msg(int line, const char* str) {
-            cout << " | [Msg  ] " << test.file << ":" << line << ": " << str << endl;
+            if(level < MSG_LOWER)
+                cout << " | [Msg  ] " << test.file << ":" << line << ": " << str << endl;
         }
         void Warn(int line, const char* str) {
-            cout << " | [Warn ] " << test.file << ":" << line << ": " << str << endl;
+            if(level < WARN_LOWER)
+                cout << " | [Warn ] " << test.file << ":" << line << ": " << str << endl;
         }
         void Err(int line, const char* str) {
-            cout << " | [Error] " << test.file << ":" << line << ": " << str << endl;
+            if(level < ERR_LOWER)
+                cout << " | [Error] " << test.file << ":" << line << ": " << str << endl;
             test.failed = true, test.failureCount++;
             failedTestCount++;
         }
@@ -49,7 +58,8 @@ class Testing {
             failedTestCount++;
         }
         template<typename T> void Log(int line, const char* varname, T value) {
-            cout << " | [Log  ] " << test.file << ":" << line << ": "
+            if(level < MSG_LOWER)
+                cout << " | [Log  ] " << test.file << ":" << line << ": "
                       << varname << " = " << value << endl;
         }
         template<typename T> void Actual(const char* varname, T value) {
@@ -60,7 +70,7 @@ class Testing {
         }
         ~Testing() {
             clock_t duration = clock() - start;
-            cout << "[End   ] -------------------- " << test.name;
+            cout << "[End   ] =====> " << test.name;
             if(test.failed) cout << " FAIL" << endl;
             else cout << " PASS" << endl;
             if(more) {
@@ -73,15 +83,18 @@ class Testing {
         static void Simpler() {
             more = false;
         }
+        static void Filter(FiltLevel filt) {
+            level = filt;
+        }
         static void ReportTotal() {
-            cout << "[Report  ] -------------------- TOTAL" << endl;
+            cout << "[Report  ] --------------------" << endl;
             for(Test item : testsTotal) {
                 cout << " * " << item.name << ": "
                           << item.failureCount << " failure, " << item.duration << "ms  "
                           << "( " << item.file << " )" << endl;
             }
             if(failedTestCount > 0) cout << " # " << failedTestCount << " failed tests." << endl;
-            cout << "[Report  ] -------------------- TOTAL" << endl
+            cout << "[Report  ] --------------------" << endl
                 << "Done. " << clock() << "ms used." << endl;
         }
     private:
@@ -98,11 +111,13 @@ class Testing {
         static vector<Test> testsTotal;
         static int failedTestCount;
         static bool more;
+        static FiltLevel level;
 };
 
 vector<Testing::Test> Testing::testsTotal(0);
 int Testing::failedTestCount = 0;
 bool Testing::more = true;
+FiltLevel Testing::level = ALL;
 
 /* ========== Signer ========== */
 
@@ -115,21 +130,30 @@ class Signer {
             for(signedTestWrapper item : signedTestList) {
                 if(!excepts.count(item.name)) {
                     Testing testing = Testing(item.file, item.name);
-                try {
-                    (*item.func)(testing);
-                } catch(exception& err) {
-                    testing.Err(-1, err.what());
-                    cout << " |   -> !!! UNCAUGHT ERROR !!!" << endl;
-                } catch(const char* err) {
-                    testing.Err(-1, err);
-                    cout << " |   -> !!! UNCAUGHT ERROR !!!" << endl;
-                }
+                    try {
+                        (*item.func)(testing);
+                    } catch(exception& err) {
+                        if(allThrow) throw err;
+                        else {
+                            testing.Err(-1, err.what());
+                            cout << " |   -> !!! UNCAUGHT ERROR !!!" << endl;
+                        }
+                    } catch(const char* err) {
+                        if(allThrow) throw err;
+                        else {
+                            testing.Err(-1, err);
+                            cout << " |   -> !!! UNCAUGHT ERROR !!!" << endl;
+                        }
+                    }
                 }
             }
             signedTestList.clear();
         }
         static void Except(const char* name) {
             excepts.insert(name);
+        }
+        static void AllThrow() {
+            allThrow = true;
         }
         /* A signed independence test list */
         typedef struct {
@@ -139,27 +163,30 @@ class Signer {
         } signedTestWrapper;
         static vector<signedTestWrapper> signedTestList;
         static set<const char*> excepts;
+        static bool allThrow;
 };
 vector<Signer::signedTestWrapper> Signer::signedTestList(0);
 set<const char*> Signer::excepts;
+bool Signer::allThrow = false;
 
-}; /* namespace ending */
+} /* namespace ending */
 
 /* ========== Default main functions ========== */
-
-#define MAIN \
-    int main() { \
-        lightest::Signer::TestAll(); lightest::Testing::ReportTotal(); \
-        return 0; }
-#define LESS_MAIN \
-    int main() { \
-        lightest::Testing::Simpler(); lightest::Signer::TestAll(); \
-        return 0; }
 
 #define EXCEPT(name) lightest::Signer::Except( #name )
 #define TESTALL() lightest::Signer::TestAll()
 #define REPORT() lightest::Testing::ReportTotal()
 #define SIMPLER() lightest::Testing::Simpler()
+#define ALL_THROW() lightest::Signer::AllThrow()
+
+#define MAIN \
+    int main() { \
+        TESTALL(); REPORT(); \
+        return 0; }
+#define LESS_MAIN \
+    int main() { \
+        SIMPLER(); FILTER(lightest::MSG_LOWER); TESTALL(); \
+        return 0; }
 
 /* ========== Logging Macros ========== */
 
@@ -193,9 +220,9 @@ set<const char*> Signer::excepts;
 #define REQUIRE(condition) \
     ( [&] () { \
         bool res = !(condition); \
-        if(condition) { \
-        FAIL("Didn't pass (" #condition ")" ); \
-        } return res; \
+        if(res) \
+            FAIL("Didn't pass (" #condition ")" ); \
+        return res; \
     } () )
 #define CHECK(condition) \
     ( [&] () { \
@@ -218,3 +245,19 @@ set<const char*> Signer::excepts;
             testing.Actual(#actual, (actual)); \
         } \
     } while(0)
+#define REQ_OP(expected, actual, operator) \
+    do { \
+        if(REQUIRE((expected) operator (actual))) { \
+            testing.Expected(#expected, expected); \
+            testing.Actual(#actual, actual); \
+        } \
+    } while(0)
+#define CHK_OP(expected, actual, operator) \
+    do { \
+        if(CHECK((expected) operator (actual))) { \
+            testing.Expected(#expected, expected); \
+            testing.Actual(#actual, actual); \
+        } \
+    } while(0)
+
+#endif
