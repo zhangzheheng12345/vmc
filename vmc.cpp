@@ -18,7 +18,6 @@ template<class T> LinearBox<T>::LinearBox(const LinearBox& origin) {
     data = origin.data;
     data->Add();
     length = origin.length;
-    copied = false;
 }
 template<class T> LinearBox<T>::LinearBox(std::initializer_list<T> li) {
     if(data) {
@@ -26,6 +25,7 @@ template<class T> LinearBox<T>::LinearBox(std::initializer_list<T> li) {
         if(data->Destroyed()) delete data;
     }
     data = new PtrBox<T>(new T[li.size()]);
+    length = li.size();
     unsigned int index = 0;
     for(const T& item : li) {
         data->Get()[index] = item;
@@ -40,26 +40,20 @@ template<class T> T LinearBox<T>::at(unsigned int index) {
     return data->Get()[index];
 }
 template<class T> void LinearBox<T>::set(unsigned int index, const T& value) {
-    if(copied)
-        data->Get()[index] = value;
-    else {
-        T* tmp = deepCopy();
-        tmp[index] = value;
-        if(data) {
-            data->Sub();
-            if(data->Destroyed()) delete data;
-        }
-        data = new PtrBox<T>(tmp);
-    }
+    data->Get()[index] = value;
 }
 template<class T> LinearBox<T> LinearBox<T>::clone() {
-    return LinearBox(length, deepCopy());
-}
-template<class T> T* LinearBox<T>::deepCopy() {
     T* res = new T[length];
     T* src = data->Get();
     for(unsigned int i = 0; i < length; i++) res[i] = src[i];
-    return res;
+    return LinearBox(length, res);
+}
+template<class T> bool LinearBox<T>::operator==(const LinearBox<T>& operand) {
+    if(operand.length != length) return false;
+    if(operand.data->Get() == data->Get()) return true;
+    T* operandPtr = operand.data->Get(), *thisPtr = data->Get();
+    for(unsigned int i = 0; i < length; i++) if(operandPtr[i] != thisPtr[i]) return false;
+    return true;
 }
 
 } // namespace end

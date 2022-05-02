@@ -37,11 +37,10 @@ public:
     void set(unsigned int index, const T& value);
     LinearBox<T> clone();
     unsigned int len() { return length; }
+    bool operator==(const LinearBox<T>&);
 private:
-    T* deepCopy();
     PtrBox<T>* data = nullptr;
     unsigned int length;
-    bool copied = true;
 };
 
 // 1D data container
