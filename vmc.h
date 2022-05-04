@@ -39,8 +39,7 @@ public:
     LinearBox(const LinearBox&);
     LinearBox(std::initializer_list<T>);
     ~LinearBox();
-    T at(unsigned int index);
-    void set(unsigned int index, const T& value);
+    T& at(unsigned int index);
     LinearBox<T> clone();
     unsigned int len() { return length; }
     bool operator==(const LinearBox<T>&);
@@ -59,17 +58,10 @@ public:
     Vec(std::initializer_list<T> li) { data = LinearBox<T>(li); }
     Vec(const LinearBox<T>& box) { data = box; }
     ~Vec() {}
-    T at(int index) {
-        if(index > 0) {
-            if(index < data.len()) return data.at(index);
-            // TODO: Use self defined error type
-            else throw "Index out of range in Vec";
-        } else {
-            int absIndex = data.len() + index;
-            if(absIndex > 0) return data.at(absIndex);
-            else throw "Minus index out of range in Vec";
-        }
-    }
+    T& at(int);
+    unsigned int len() { return data.len(); }
+    bool operator==(const Vec<T>& operand) { return data == operand.data; }
+    bool operator!=(const Vec<T>& operand) { return data != operand.data; }
 private:
     LinearBox<T> data;
 };

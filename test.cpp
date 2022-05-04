@@ -1,5 +1,5 @@
 #include "lightest.h"
-#define _VMC_LOG_ 0
+// #define _VMC_LOG_ 0
 #include "vmc.h"
 using namespace vmc;
 
@@ -27,16 +27,16 @@ DEFTEST(TestLinearBox) {
     REQ_OP(2, box3.at(1), ==);
     REQUIRE(box2.len() == 5);
     // set & clone
-    box2.set(1, 3);
+    box2.at(1) = 3;
     LinearBox<int> box4 = box2.clone();
-    box4.set(1, 4);
+    box4.at(1) = 4;
     REQ_OP(3, box1.at(1), ==);
     REQ_OP(3, box2.at(1), ==);
     REQ_OP(4, box4.at(1), ==);
     // operator== & !=
     REQUIRE(box1 == box2);
     REQUIRE(box2 != box3);
-    box1.set(1, 2);
+    box1.at(1) = 2;
     REQUIRE(box2 == box3);
 }
 
@@ -46,4 +46,6 @@ DEFTEST(TestVec) {
     vmc::Vec<int> box2 = box1;
     vmc::Vec<int> box3{1, 2, 3, 4, 5};
     vmc::Vec<int> box4 = LinearBox<int>{1, 2, 3, 4, 5};
+    REQUIRE(box1 == box2);
+    REQUIRE(box3 == box4);
 }

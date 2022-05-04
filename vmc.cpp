@@ -45,16 +45,10 @@ template<class T> LinearBox<T>::~LinearBox() {
     data->Sub();
     if(data->Destroyed()) delete data;
 }
-template<class T> T LinearBox<T>::at(unsigned int index) {
+template<class T> T& LinearBox<T>::at(unsigned int index) {
     return data->Get()[index];
 }
-template<class T> void LinearBox<T>::set(unsigned int index, const T& value) {
-    data->Get()[index] = value;
-}
 template<class T> LinearBox<T> LinearBox<T>::clone() {
-#ifdef _VMC_LOG_
-    std::cout << "Data allocated" << std::endl;
-#endif
     T* res = new T[length];
     T* src = data->Get();
     for(unsigned int i = 0; i < length; i++) res[i] = src[i];
@@ -67,5 +61,16 @@ template<class T> bool LinearBox<T>::operator==(const LinearBox<T>& operand) {
     for(unsigned int i = 0; i < length; i++) if(operandPtr[i] != thisPtr[i]) return false;
     return true;
 }
+template<class T> T& Vec<T>::at(int index) {
+        if(index > 0) {
+            if(index < data.len()) return data.at(index);
+            // TODO: Use self defined error type
+            else throw "Index out of range in Vec";
+        } else {
+            int absIndex = data.len() + index;
+            if(absIndex > 0) return data.at(absIndex);
+            else throw "Minus index out of range in Vec";
+        }
+    }
 
 } // namespace end
