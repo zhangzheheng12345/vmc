@@ -1,5 +1,6 @@
-#include "vmc.h"
 #include "lightest.h"
+#define _VMC_LOG_ 0
+#include "vmc.h"
 using namespace vmc;
 
 MAIN
@@ -14,13 +15,13 @@ DEFTEST(TestPtrBox) {
 }
 
 DEFTEST(TestLinearBox) {
-    const unsigned int box1Len = 5;
-    vmc::LinearBox<int> box1(box1Len, new int[box1Len] {1, 2, 3, 4, 5});
+    const unsigned int boxLen = 5;
+    vmc::LinearBox<int> box1(boxLen, new int[boxLen] {1, 2, 3, 4, 5});
     vmc::LinearBox<int> box2 = box1;
     vmc::LinearBox<int> box3{1, 2, 3, 4, 5};
     // at & len
     REQUIRE(box1.at(1) == 2);
-    REQUIRE(box1.len() == box1Len);
+    REQUIRE(box1.len() == boxLen);
     REQUIRE(box2.at(1) == 2);
     REQUIRE(box2.len() == box1.len());
     REQ_OP(2, box3.at(1), ==);
@@ -37,4 +38,12 @@ DEFTEST(TestLinearBox) {
     REQUIRE(box2 != box3);
     box1.set(1, 2);
     REQUIRE(box2 == box3);
+}
+
+DEFTEST(TestVec) {
+    const unsigned int boxLen = 5;
+    vmc::Vec<int> box1(boxLen, new int[boxLen] {1, 2, 3, 4, 5});
+    vmc::Vec<int> box2 = box1;
+    vmc::Vec<int> box3{1, 2, 3, 4, 5};
+    vmc::Vec<int> box4 = LinearBox<int>{1, 2, 3, 4, 5};
 }

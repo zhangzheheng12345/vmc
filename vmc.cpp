@@ -3,10 +3,16 @@
 namespace vmc {
 
 template<class T> LinearBox<T>::LinearBox(unsigned int size) {
+#ifdef _VMC_LOG_
+    std::cout << "Data allocated" << std::endl;
+#endif
     data = new PtrBox<T>(new T[size]);
     length = size;
 }
 template<class T> LinearBox<T>::LinearBox(unsigned int size, T* ptr) {
+#ifdef _VMC_LOG_
+    std::cout << "Data allocated" << std::endl;
+#endif
     data = new PtrBox<T>(ptr);
     length = size;
 }
@@ -24,6 +30,9 @@ template<class T> LinearBox<T>::LinearBox(std::initializer_list<T> li) {
         data->Sub();
         if(data->Destroyed()) delete data;
     }
+#ifdef _VMC_LOG_
+    std::cout << "Data allocated" << std::endl;
+#endif
     data = new PtrBox<T>(new T[li.size()]);
     length = li.size();
     unsigned int index = 0;
@@ -43,6 +52,9 @@ template<class T> void LinearBox<T>::set(unsigned int index, const T& value) {
     data->Get()[index] = value;
 }
 template<class T> LinearBox<T> LinearBox<T>::clone() {
+#ifdef _VMC_LOG_
+    std::cout << "Data allocated" << std::endl;
+#endif
     T* res = new T[length];
     T* src = data->Get();
     for(unsigned int i = 0; i < length; i++) res[i] = src[i];
