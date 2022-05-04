@@ -38,6 +38,7 @@ public:
     LinearBox<T> clone();
     unsigned int len() { return length; }
     bool operator==(const LinearBox<T>&);
+    bool operator!=(const LinearBox<T>& operand) { return !(*this == operand); }
 private:
     PtrBox<T>* data = nullptr;
     unsigned int length;
