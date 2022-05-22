@@ -37,13 +37,13 @@ public:
     LinearBox(unsigned int size);
     LinearBox(unsigned int size, T* ptr);
     LinearBox(const LinearBox&);
-    LinearBox(std::initializer_list<T>);
+    LinearBox(const std::initializer_list<T>&);
     ~LinearBox();
-    T& at(unsigned int index);
-    LinearBox<T> clone();
-    unsigned int len() { return length; }
-    bool operator==(const LinearBox<T>&);
-    bool operator!=(const LinearBox<T>& operand) { return !(*this == operand); }
+    T& at(unsigned int index) const ;
+    LinearBox<T> clone() const;
+    unsigned int len() const { return length; }
+    bool operator==(const LinearBox<T>&) const;
+    bool operator!=(const LinearBox<T>& operand) const { return !(*this == operand); }
 private:
     PtrBox<T>* data = nullptr;
     unsigned int length = 0;
@@ -55,13 +55,15 @@ public:
     Vec(unsigned int size) { data = LinearBox<T>(size); }
     Vec(unsigned int size, T* data) { this->data = LinearBox<T>(size, data); }
     Vec(const Vec& vec) { data = vec.data; }
-    Vec(std::initializer_list<T> li) { data = LinearBox<T>(li); }
+    Vec(const std::initializer_list<T>& li) { data = LinearBox<T>(li); }
     Vec(const LinearBox<T>& box) { data = box; }
     ~Vec() {}
     T& at(int);
-    unsigned int len() { return data.len(); }
-    bool operator==(const Vec<T>& operand) { return data == operand.data; }
-    bool operator!=(const Vec<T>& operand) { return data != operand.data; }
+    unsigned int len() const { return data.len(); }
+    Vec<T> clone() const { return Vec(data.clone()); }
+    bool operator==(const Vec<T>& operand) const { return data == operand.data; }
+    bool operator!=(const Vec<T>& operand) const { return data != operand.data; }
+    template<typename Type> friend std::ostream& operator<<(std::ostream&, const Vec<Type>&);
 private:
     LinearBox<T> data;
 };

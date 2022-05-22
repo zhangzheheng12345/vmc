@@ -48,4 +48,6 @@ DEFTEST(TestVec) {
     vmc::Vec<int> box4 = LinearBox<int>{1, 2, 3, 4, 5};
     REQUIRE(box1 == box2);
     REQUIRE(box3 == box4);
+    REQ_OP(box1.at(2), 3, ==);
+    LOG(box1); LOG(box2); LOG(box3); LOG(box4);
 }
